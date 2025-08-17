@@ -45,6 +45,36 @@
 - 🌱 **[Biome](https://biomejs.dev/)**: Ferramenta de linting e formatação para garantir código limpo.
 
 
+## ⚠️ Requisitos de versão do Node.js
+
+Para executar este projeto corretamente, especialmente ao rodar testes com **Vitest** e utilizar cobertura ou interface de testes, é necessário ter uma versão compatível do Node.js.
+
+O Vite 7.x, utilizado como dependência do Vitest, exige:
+
+- Node.js ^20.19.0 || >=22.12.0
+
+````bash
+Caso esteja com uma versão incompatível, você verá erros como:
+  The engine "node" is incompatible with this module. Expected version "^20.19.0 || >=22.12.0". Got "20.12.0"
+````
+
+### 💡 Solução
+
+1. Atualize o Node.js para a versão mínima exigida.
+  No Windows, recomenda-se usar [nvm-windows](https://github.com/coreybutler/nvm-windows) para gerenciar versões.
+
+
+```bash
+  nvm install 20.19.0
+  nvm use 20.19.0
+
+  # Verifique a versão instalada
+  node -v
+
+  #Após atualizar, instale novamente o Vitest e sua UI:
+  yarn add -D vitest@latest @vitest/ui@latest
+```
+
 ## 🚀 Como executar o projeto
 
 ### Pré-requisitos
