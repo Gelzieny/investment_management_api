@@ -3,7 +3,7 @@ import swagger from "@fastify/swagger";
 import swaggerUI from "@fastify/swagger-ui";
 
 export async function swaggerConfig(app: FastifyInstance) {
-  // Swagger JSON
+  // Registrar Swagger JSON primeiro
   await app.register(swagger, {
     swagger: {
       info: {
@@ -16,16 +16,9 @@ export async function swaggerConfig(app: FastifyInstance) {
     },
   });
 
-  // Swagger UI
+  // Registrar Swagger UI
   await app.register(swaggerUI, {
     routePrefix: "/docs",
-    swagger: {
-      info: {
-        title: "Investimento Pessoal API",
-        description: "Documentação interativa da API",
-        version: "1.0.0",
-      },
-    },
     uiConfig: {
       docExpansion: "full",
       deepLinking: false,

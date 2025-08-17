@@ -1,9 +1,8 @@
-import { env } from "process";
-import { app } from "./app.js";
-import { swaggerConfig } from "./config/swagger.js";
+import { app } from "./app";
+import { env } from "./env";
+import { swaggerConfig } from "./config/swagger";
 
 const PORT = Number(env.PORT) || 3333
-
 
 async function bootstrap() {
   await swaggerConfig(app);

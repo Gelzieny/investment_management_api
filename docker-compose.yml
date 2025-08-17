@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  postgresql:
+    image: bitnami/postgresql:latest
+    container_name: ps_portfolio
+    restart: always
+    networks:
+      - app_network
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=ps_portfolio
+    volumes:
+      - "postgresql_data:/bitnami/postgresql"
+
+volumes:
+  postgresql_data:
+
+networks:
+  app_network:

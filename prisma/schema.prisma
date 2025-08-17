@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela: Usuarios
+model Usuarios {
+  codigo       Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(100)
+  data_criacao DateTime @default(now()) @db.Timestamptz(6)
+  senha        String   @db.VarChar(100)
+
+  Ativos              Ativos[]
+  HistoricoPatrimonio Historico_Patrimonio[]
+  Negociacoes         Negociacoes[]
+  Proventos           Proventos[]
+  IndicadoresAtivos   Indicadores_Ativos[]
+  UsuarioRoles        Usuario_Roles[]
+
+  @@map("usuarios")
+}
+
+// Tabela: Categorias_Investimento
+model Cat_Investimento {
+  codigo         Int    @id @default(autoincrement())
+  nome_categoria String @unique @db.VarChar(50)
+
+  Ativos Ativos[]
+
+  @@map("cat_investimento")
+}
+
+// Tabela: Ativos
+model Ativos {
+  codigo           Int    @id @default(autoincrement())
+  codigo_usuario   Int
+  codigo_categoria Int
+  codigo_ativo     String @db.VarChar(20)
+  nome_ativo       String @db.VarChar(100)
+
+  Usuarios         Usuarios         @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Cat_Investimento Cat_Investimento @relation(fields: [codigo_categoria], references: [codigo], onDelete: Cascade)
+
+  HistoricoPatrimonio Historico_Patrimonio[]
+  Negociacoes         Negociacoes[]
+  Proventos           Proventos[]
+  IndicadoresAtivos   Indicadores_Ativos[]
+
+  @@unique([codigo, codigo_ativo])
+  @@map("ativos")
+}
+
+// Tabela: Historico_Patrimonio
+model Historico_Patrimonio {
+  codigo         Int      @id @default(autoincrement())
+  codigo_usuario Int
+  codigo_ativo   Int
+  data           DateTime @db.Date
+  alteracao      String?  @db.VarChar(50)
+  quantidade     Int
+  novo_saldo     Int
+  preco_medio    Decimal  @db.Decimal(10, 4)
+  Usuarios       Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos         Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  @@map("historico_patrimonio")
+}
+
+// Tabela: Negociacoes
+model Negociacoes {
+  codigo          Int      @id @default(autoincrement())
+  codigo_usuario  Int
+  codigo_ativo    Int
+  data            DateTime @db.Date
+  corretora       String?  @db.VarChar(50)
+  tipo            String   @db.Char(1)
+  qtd             Int
+  preco           Decimal  @db.Decimal(10, 2)
+  total           Decimal? @db.Decimal(10, 2)
+  preco_com_taxas Decimal? @db.Decimal(10, 4)
+  total_com_taxas Decimal? @db.Decimal(10, 2)
+  Usuarios        Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos          Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  @@map("negociacoes")
+}
+
+// Tabela: Proventos
+model Proventos {
+  codigo             Int      @id @default(autoincrement())
+  codigo_usuario     Int
+  codigo_ativo       Int
+  data_pagamento     DateTime @db.Date
+  data_com           DateTime @db.Date
+  tipo               String   @db.VarChar(50)
+  valor_por_cota     Decimal  @db.Decimal(10, 4)
+  total_recebido     Decimal? @db.Decimal(10, 2)
+  percentual_on_cost Decimal? @db.Decimal(5, 2)
+  Usuarios           Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos             Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  @@map("proventos")
+}
+
+// Tabela: Indicadores_Ativos
+model Indicadores_Ativos {
+  codigo                 Int      @id @default(autoincrement())
+  codigo_usuario         Int
+  codigo_ativo           Int
+  data                   DateTime @db.Date
+  valor_mercado          BigInt?
+  patrimonio             BigInt?
+  p_vp                   Decimal? @db.Decimal(5, 2)
+  retorno_12m_percentual Decimal? @db.Decimal(5, 2)
+  retorno_12m_real       Decimal? @db.Decimal(5, 2)
+  variacao_12m           Decimal? @db.Decimal(5, 2)
+  preco_min_52sem        Decimal? @db.Decimal(10, 2)
+  preco_max_52sem        Decimal? @db.Decimal(10, 2)
+  Usuarios               Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos                 Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  @@map("indicadores_ativos")
+}
+
+// Tabela: Roles
+model Roles {
+  codigo         Int               @id @default(autoincrement())
+  nome_role      String            @unique @db.VarChar(50)
+  UsuarioRoles   Usuario_Roles[]
+  RolePermissoes Role_Permissoes[]
+
+  @@map("roles")
+}
+
+// Tabela: Permissoes
+model Permissoes {
+  codigo         Int               @id @default(autoincrement())
+  nome_permissao String            @unique @db.VarChar(100)
+  RolePermissoes Role_Permissoes[]
+
+  @@map("permissoes")
+}
+
+// Tabela de junção: Usuario_Roles
+model Usuario_Roles {
+  codigo_usuario Int      @map("codigo_usuario")
+  codigo_role    Int      @map("codigo_role")
+  Usuarios       Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Roles          Roles    @relation(fields: [codigo_role], references: [codigo], onDelete: Cascade)
+
+  @@id([codigo_usuario, codigo_role])
+  @@map("usuario_roles")
+}
+
+// Tabela de junção: Role_Permissoes
+model Role_Permissoes {
+  codigo_role      Int
+  codigo_permissao Int
+  Roles            Roles      @relation(fields: [codigo_role], references: [codigo], onDelete: Cascade)
+  Permissoes       Permissoes @relation(fields: [codigo_permissao], references: [codigo], onDelete: Cascade)
+
+  @@id([codigo_role, codigo_permissao])
+  @@map("role_permissoes")
+}
