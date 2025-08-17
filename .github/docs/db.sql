@@ -9,7 +9,8 @@ CREATE TABLE Usuarios (
     id_usuario SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    data_criacao TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    data_criacao TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    senha VARCHAR(100) NOT NULL
 );
 
 COMMENT ON TABLE Usuarios IS 'Tabela que armazena os usuários do sistema.';
@@ -201,3 +202,79 @@ CREATE TABLE Role_Permissoes (
 );
 
 COMMENT ON TABLE Role_Permissoes IS 'Tabela de junção para atribuir permissões a papéis (N:N).';
+
+-- Tabela: Transacoes_Viagem
+-- Tabela para registrar transações de viagem e conversões de moeda.
+CREATE TABLE Transacoes_Viagem (
+    id_transacao SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    data DATE NOT NULL,
+    valor_original NUMERIC(10, 2) NOT NULL,
+    moeda_original VARCHAR(10) NOT NULL,
+    valor_convertido NUMERIC(10, 2) NOT NULL,
+    moeda_convertida VARCHAR(10) NOT NULL,
+    taxa_conversao NUMERIC(10, 4) NOT NULL,
+    tipo_transacao VARCHAR(50) NOT NULL,
+    descricao VARCHAR(255),
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE Transacoes_Viagem IS 'Registra as transações de viagem e conversões de moeda de cada usuário.';
+COMMENT ON COLUMN Transacoes_Viagem.id_transacao IS 'Identificador único da transação de viagem.';
+COMMENT ON COLUMN Transacoes_Viagem.id_usuario IS 'Chave estrangeira para a tabela Usuarios.';
+COMMENT ON COLUMN Transacoes_Viagem.data IS 'Data da transação.';
+COMMENT ON COLUMN Transacoes_Viagem.valor_original IS 'Valor gasto na moeda original.';
+COMMENT ON COLUMN Transacoes_Viagem.moeda_original IS 'Moeda original da transação (ex: EUR, USD).';
+COMMENT ON COLUMN Transacoes_Viagem.valor_convertido IS 'Valor da transação convertido para a moeda local (BRL).';
+COMMENT ON COLUMN Transacoes_Viagem.moeda_convertida IS 'Moeda convertida (ex: BRL).';
+COMMENT ON COLUMN Transacoes_Viagem.taxa_conversao IS 'Taxa de câmbio usada na conversão.';
+COMMENT ON COLUMN Transacoes_Viagem.tipo_transacao IS 'Tipo de transação (ex: Wise, Cartão de Crédito).';
+COMMENT ON COLUMN Transacoes_Viagem.descricao IS 'Descrição opcional da despesa.';
+
+-- Tabela: Juros_Wise
+-- Tabela para registrar os juros recebidos através do Wise Interest.
+CREATE TABLE Juros_Wise (
+    id_juros SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    data DATE NOT NULL,
+    moeda VARCHAR(10) NOT NULL,
+    valor_juros NUMERIC(10, 2) NOT NULL,
+    saldo_base NUMERIC(10, 2) NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios (id_usuario) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE Juros_Wise IS 'Registra os juros ganhos pelo usuário através do Wise Interest.';
+COMMENT ON COLUMN Juros_Wise.id_juros IS 'Identificador único do registro de juros.';
+COMMENT ON COLUMN Juros_Wise.id_usuario IS 'Chave estrangeira para a tabela Usuarios.';
+COMMENT ON COLUMN Juros_Wise.data IS 'Data em que os juros foram recebidos.';
+COMMENT ON COLUMN Juros_Wise.moeda IS 'Moeda em que os juros foram recebidos (ex: USD, EUR).';
+COMMENT ON COLUMN Juros_Wise.valor_juros IS 'Valor dos juros recebidos.';
+COMMENT ON COLUMN Juros_Wise.saldo_base IS 'Saldo base sobre o qual os juros foram calculados.';
+
+-- Tabela: Cartoes_Credito
+-- Tabela para armazenar os cartões de crédito associados a um usuário.
+CREATE TABLE Cartoes_Credito (
+    id_cartao SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    nome_cartao VARCHAR(100) NOT NULL,
+    banco VARCHAR(100),
+    tipo_cartao VARCHAR(50),
+    bandeira VARCHAR(50),
+    ultimos_quatro_digitos VARCHAR(4) NOT NULL,
+    limite NUMERIC(10, 2),
+    cor VARCHAR(20),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE Cartoes_Credito IS 'Armazena informações sobre os cartões de crédito de cada usuário.';
+COMMENT ON COLUMN Cartoes_Credito.id_cartao IS 'Identificador único do cartão.';
+COMMENT ON COLUMN Cartoes_Credito.id_usuario IS 'Chave estrangeira para a tabela Usuarios.';
+COMMENT ON COLUMN Cartoes_Credito.nome_cartao IS 'Nome de exibição do cartão (ex: Nubank Roxinho).';
+COMMENT ON COLUMN Cartoes_Credito.banco IS 'Nome do banco emissor do cartão.';
+COMMENT ON COLUMN Cartoes_Credito.tipo_cartao IS 'Tipo do cartão (ex: Crédito).';
+COMMENT ON COLUMN Cartoes_Credito.bandeira IS 'Bandeira do cartão (ex: Mastercard).';
+COMMENT ON COLUMN Cartoes_Credito.ultimos_quatro_digitos IS 'Últimos 4 dígitos do cartão para identificação.';
+COMMENT ON COLUMN Cartoes_Credito.limite IS 'Limite de crédito do cartão.';
+COMMENT ON COLUMN Cartoes_Credito.cor IS 'Cor do cartão, para fins de personalização.';
+COMMENT ON COLUMN Cartoes_Credito.ativo IS 'Indica se o cartão está ativo.';

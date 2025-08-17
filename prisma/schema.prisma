@@ -8,6 +8,7 @@ datasource db {
 }
 
 // Tabela: Usuarios
+// Tabela para armazenar informações dos usuários do sistema.
 model Usuarios {
   codigo       Int      @id @default(autoincrement())
   nome         String   @db.VarChar(100)
@@ -21,43 +22,50 @@ model Usuarios {
   Proventos           Proventos[]
   IndicadoresAtivos   Indicadores_Ativos[]
   UsuarioRoles        Usuario_Roles[]
+  TransacoesViagem    Transacoes_Viagem[]
+  JurosWise           Juros_Wise[]
+  Contas              Contas[]
+  Transacoes          Transacoes[]
+  CartoesCredito      Cartoes_Credito[]
 
   @@map("usuarios")
 }
 
 // Tabela: Categorias_Investimento
-model Cat_Investimento {
-  codigo         Int    @id @default(autoincrement())
-  nome_categoria String @unique @db.VarChar(50)
-
-  Ativos Ativos[]
+// Tabela para armazenar as categorias de investimento padronizadas.
+model Categorias_Investimento {
+  codigo         Int      @id @default(autoincrement())
+  nome_categoria String   @unique @db.VarChar(50)
+  Ativos         Ativos[]
 
   @@map("cat_investimento")
 }
 
 // Tabela: Ativos
+// A tabela `Ativos` agora se relaciona com `Usuarios` e `Categorias_Investimento`.
 model Ativos {
   codigo           Int    @id @default(autoincrement())
-  codigo_usuario   Int
-  codigo_categoria Int
+  codigo_usuario   Int    @map("id_usuario")
+  codigo_categoria Int    @map("id_categoria")
   codigo_ativo     String @db.VarChar(20)
-  nome_ativo       String @db.VarChar(100)
+  nome             String @db.VarChar(100)
 
-  Usuarios         Usuarios         @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
-  Cat_Investimento Cat_Investimento @relation(fields: [codigo_categoria], references: [codigo], onDelete: Cascade)
+  Usuarios                Usuarios                @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Categorias_Investimento Categorias_Investimento @relation(fields: [codigo_categoria], references: [codigo], onDelete: Cascade)
 
   HistoricoPatrimonio Historico_Patrimonio[]
   Negociacoes         Negociacoes[]
   Proventos           Proventos[]
   IndicadoresAtivos   Indicadores_Ativos[]
 
-  @@unique([codigo, codigo_ativo])
+  @@unique([codigo_usuario, codigo_ativo])
   @@map("ativos")
 }
 
 // Tabela: Historico_Patrimonio
+// Registra o histórico de saldo e preço médio do investidor para cada ativo.
 model Historico_Patrimonio {
-  codigo         Int      @id @default(autoincrement())
+  id_historico   Int      @id @default(autoincrement())
   codigo_usuario Int
   codigo_ativo   Int
   data           DateTime @db.Date
@@ -65,20 +73,22 @@ model Historico_Patrimonio {
   quantidade     Int
   novo_saldo     Int
   preco_medio    Decimal  @db.Decimal(10, 4)
-  Usuarios       Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
-  Ativos         Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
 
-  @@map("historico_patrimonio")
+  Usuarios Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos   Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  @@map("hist_patrimonio")
 }
 
 // Tabela: Negociacoes
+// Detalha cada transação realizada (compra ou venda).
 model Negociacoes {
   codigo          Int      @id @default(autoincrement())
   codigo_usuario  Int
   codigo_ativo    Int
   data            DateTime @db.Date
   corretora       String?  @db.VarChar(50)
-  tipo            String   @db.Char(1)
+  tipo            String   @db.Char(1) // O CHECK constraint 'C'/'V' deve ser aplicado na lógica da aplicação.
   qtd             Int
   preco           Decimal  @db.Decimal(10, 2)
   total           Decimal? @db.Decimal(10, 2)
@@ -91,6 +101,7 @@ model Negociacoes {
 }
 
 // Tabela: Proventos
+// Armazena os proventos (rendimentos) recebidos.
 model Proventos {
   codigo             Int      @id @default(autoincrement())
   codigo_usuario     Int
@@ -101,13 +112,15 @@ model Proventos {
   valor_por_cota     Decimal  @db.Decimal(10, 4)
   total_recebido     Decimal? @db.Decimal(10, 2)
   percentual_on_cost Decimal? @db.Decimal(5, 2)
-  Usuarios           Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
-  Ativos             Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
+
+  Usuarios Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+  Ativos   Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
 
   @@map("proventos")
 }
 
 // Tabela: Indicadores_Ativos
+// Armazena indicadores de mercado de um ativo para um usuário em uma data específica.
 model Indicadores_Ativos {
   codigo                 Int      @id @default(autoincrement())
   codigo_usuario         Int
@@ -124,10 +137,10 @@ model Indicadores_Ativos {
   Usuarios               Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
   Ativos                 Ativos   @relation(fields: [codigo_ativo], references: [codigo], onDelete: Cascade)
 
-  @@map("indicadores_ativos")
+  @@map("ind_ativos")
 }
 
-// Tabela: Roles
+// Tabelas para controle de acesso (Roles e Permissões)
 model Roles {
   codigo         Int               @id @default(autoincrement())
   nome_role      String            @unique @db.VarChar(50)
@@ -137,10 +150,10 @@ model Roles {
   @@map("roles")
 }
 
-// Tabela: Permissoes
 model Permissoes {
-  codigo         Int               @id @default(autoincrement())
-  nome_permissao String            @unique @db.VarChar(100)
+  codigo         Int    @id @default(autoincrement())
+  nome_permissao String @unique @db.VarChar(100)
+
   RolePermissoes Role_Permissoes[]
 
   @@map("permissoes")
@@ -148,13 +161,13 @@ model Permissoes {
 
 // Tabela de junção: Usuario_Roles
 model Usuario_Roles {
-  codigo_usuario Int      @map("codigo_usuario")
-  codigo_role    Int      @map("codigo_role")
+  codigo_usuario Int
+  codigo_role    Int
   Usuarios       Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
   Roles          Roles    @relation(fields: [codigo_role], references: [codigo], onDelete: Cascade)
 
   @@id([codigo_usuario, codigo_role])
-  @@map("usuario_roles")
+  @@map("user_roles")
 }
 
 // Tabela de junção: Role_Permissoes
@@ -166,4 +179,100 @@ model Role_Permissoes {
 
   @@id([codigo_role, codigo_permissao])
   @@map("role_permissoes")
+}
+
+// Tabela: Transacoes_Viagem
+// Tabela para registrar transações de viagem e conversões de moeda.
+model Transacoes_Viagem {
+  codigo           Int      @id @default(autoincrement())
+  codigo_usuario   Int
+  data             DateTime @db.Date
+  valor_original   Decimal  @map("valor_original") @db.Decimal(10, 2)
+  moeda_original   String   @map("moeda_original") @db.VarChar(10)
+  valor_convertido Decimal  @map("valor_convertido") @db.Decimal(10, 2)
+  moeda_convertida String   @map("moeda_convertida") @db.VarChar(10)
+  taxa_conversao   Decimal  @map("taxa_conversao") @db.Decimal(10, 4)
+  tipo_transacao   String   @map("tipo_transacao") @db.VarChar(50)
+  descricao        String?  @db.VarChar(255)
+  Usuarios         Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+
+  @@map("transacoes_viagem")
+}
+
+// Tabela: Juros_Wise
+// Tabela para registrar os juros recebidos através do Wise Interest.
+model Juros_Wise {
+  codigo         Int      @id @default(autoincrement())
+  codigo_usuario Int
+  data           DateTime @db.Date
+  moeda          String   @db.VarChar(10)
+  valor_juros    Decimal  @db.Decimal(10, 2)
+  saldo_base     Decimal  @db.Decimal(10, 2)
+  Usuarios       Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+
+  @@map("juros_wise")
+}
+
+// Tabela: Contas
+// Tabela para armazenar as contas financeiras do usuário.
+model Contas {
+  codigo         Int          @id @default(autoincrement())
+  codigo_usuario Int
+  nome_conta     String       @db.VarChar(100)
+  instituicao    String?      @db.VarChar(100)
+  tipo           String       @db.VarChar(50)
+  saldo_inicial  Decimal      @db.Decimal(10, 2)
+  cor            String?      @db.VarChar(20)
+  Transacoes     Transacoes[]
+  Usuarios       Usuarios     @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+
+  @@map("contas")
+}
+
+// Tabela: Categorias_Financas
+// Tabela para categorizar as transações financeiras.
+model Categorias_Financas {
+  codigo         Int          @id @default(autoincrement())
+  nome_categoria String       @db.VarChar(100)
+  tipo_categoria String       @db.VarChar(20) // 'Receita' ou 'Despesa'
+  Transacoes     Transacoes[]
+
+  @@map("cat_financas")
+}
+
+// Tabela: Transacoes
+// Tabela unificada para receitas e despesas.
+model Transacoes {
+  codigo                    Int                  @id @default(autoincrement())
+  codigo_usuario            Int
+  codigo_conta              Int
+  codigo_categoria_financas Int?
+  descricao                 String?              @db.VarChar(255)
+  valor                     Decimal              @db.Decimal(10, 2)
+  data                      DateTime             @db.Date
+  tipo_transacao            String               @db.VarChar(20) // 'Receita' ou 'Despesa'
+  marcado_pago              Boolean              @default(false)
+  Contas                    Contas               @relation(fields: [codigo_conta], references: [codigo], onDelete: Cascade)
+  Categorias_Financas       Categorias_Financas? @relation(fields: [codigo_categoria_financas], references: [codigo], onDelete: SetNull)
+  Usuarios                  Usuarios             @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+
+  @@map("transacoes")
+}
+
+// Tabela: Cartoes_Credito
+// Tabela para armazenar os cartões de crédito associados a um usuário.
+model Cartoes_Credito {
+  codigo                 Int      @id @default(autoincrement())
+  codigo_usuario         Int
+  nome_cartao            String   @db.VarChar(100)
+  banco                  String?  @db.VarChar(100)
+  tipo_cartao            String?  @db.VarChar(50)
+  bandeira               String?  @db.VarChar(50)
+  ultimos_quatro_digitos String   @db.VarChar(4)
+  limite                 Decimal? @db.Decimal(10, 2)
+  cor                    String?  @db.VarChar(20)
+  ativo                  Boolean  @default(true)
+  Usuarios               Usuarios @relation(fields: [codigo_usuario], references: [codigo], onDelete: Cascade)
+
+  @@map("cartoes_credito")
 }
