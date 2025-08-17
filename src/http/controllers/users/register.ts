@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { RegisterUserUseCase } from "@/use-cases/user/register_user_case";
 import { InMemoryUsersRepository } from "@/repositories/in-memory/in-memory-users-repository";
 import { UserAlreadyExistsError } from "@/use-cases/errors/user-already-exists-error";
+import { makeRegisterUseCase } from "@/use-cases/factories/make-register-use-case";
 
 // const registerUserUseCase = new RegisterUserUseCase();
 
@@ -21,7 +22,7 @@ export async function registerController(
 
   try {
     const usersRepository = new InMemoryUsersRepository()
-     const registerUseCase = new RegisterUserUseCase(usersRepository);
+    const registerUseCase = makeRegisterUseCase()
 
     
      await registerUseCase.execute({
