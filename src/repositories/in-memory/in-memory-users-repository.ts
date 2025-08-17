@@ -5,9 +5,8 @@ import type { Prisma, Usuarios } from '@prisma/client'
 export class InMemoryUsersRepository implements UsersRepository {
   public items: Usuarios[] = []
 
-  async findById(id: string) {
-    const numericId = Number(id)
-    const user = this.items.find((item) => item.codigo === numericId)
+  async findById(id: number) {
+    const user = this.items.find((item) => item.codigo === id)
     return user ?? null
   }
 
