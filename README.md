@@ -1,6 +1,6 @@
 <p align="center">
   <a href="#">
-    🔗 <img src=".github/imgs/logo.svg"  alt="Investimento Pessoal" width="100px"/>
+    🔗 <img src=".github/imgs/logo.svg"  alt="Investimento Pessoal" width="300px"/>
   </a>
 </p>
 
