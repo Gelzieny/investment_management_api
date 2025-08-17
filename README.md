@@ -1,6 +1,6 @@
 <p align="center">
   <a href="#">
-    🔗 <img src=".github/imgs/logo.svg"  alt="Investimento Pessoal" width="100px"/>
+    🔗 <img src=".github/imgs/logo.svg"  alt="Investimento Pessoal" width="300px"/>
   </a>
 </p>
 
@@ -54,3 +54,14 @@
 <a href="https://skillicons.dev">
   <img src="https://skillicons.dev/icons?i=git,nodejs,docker,vscode" />
 </a>
+
+
+
+
+# 🧑🏻‍💻 Autor
+
+Feito com ❤️ por Gelzieny R. Martins 👋🏽 [Entre em contato!](https://gelzieny-dev.vercel.app/)
+
+## 📝 Licença
+
+Este projeto esta sobe a licença [MIT](./LICENSE).
