@@ -10,7 +10,7 @@ CREATE TABLE Usuarios (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     data_criacao TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    senha VARCHAR(100) NOT NULL
+    senha VARCHAR(255) NOT NULL
 );
 
 COMMENT ON TABLE Usuarios IS 'Tabela que armazena os usuários do sistema.';
@@ -18,6 +18,8 @@ COMMENT ON COLUMN Usuarios.id_usuario IS 'Identificador único do usuário.';
 COMMENT ON COLUMN Usuarios.nome IS 'Nome completo do usuário.';
 COMMENT ON COLUMN Usuarios.email IS 'Email do usuário (único).';
 COMMENT ON COLUMN Usuarios.data_criacao IS 'Carimbo de data/hora de criação do registro do usuário.';
+COMMENT ON COLUMN Usuarios.senha IS 'Hash da senha do usuário para autenticação.';
+
 
 -- Tabela: Categorias_Investimento
 -- Tabela para armazenar as categorias de investimento padronizadas.
@@ -278,3 +280,88 @@ COMMENT ON COLUMN Cartoes_Credito.ultimos_quatro_digitos IS 'Últimos 4 dígitos
 COMMENT ON COLUMN Cartoes_Credito.limite IS 'Limite de crédito do cartão.';
 COMMENT ON COLUMN Cartoes_Credito.cor IS 'Cor do cartão, para fins de personalização.';
 COMMENT ON COLUMN Cartoes_Credito.ativo IS 'Indica se o cartão está ativo.';
+
+
+--
+-- Adicionando dados de exemplo para as tabelas
+--
+
+-- Inserindo dados na tabela Usuarios
+INSERT INTO Usuarios (nome, email, senha) VALUES
+('Ana Silva', 'ana.silva@example.com', '123456'),
+('Bruno Costa', 'bruno.costa@example.com', '123456');
+
+-- Inserindo dados na tabela Categorias_Investimento
+INSERT INTO Categorias_Investimento (nome_categoria) VALUES
+('Ações'),
+('FIIs'),
+('ETFs'),
+('Criptomoedas');
+
+-- Inserindo dados na tabela Ativos
+-- Ana investe em um FII (FII Guardian) e uma Ação (PETR4)
+INSERT INTO Ativos (id_usuario, id_categoria, codigo, nome) VALUES
+(1, 2, 'GARE11', 'FII Guardian'),
+(1, 1, 'PETR4', 'Petrobras S.A.'),
+(2, 1, 'VALE3', 'Vale S.A.');
+
+-- Inserindo dados na tabela Historico_Patrimonio
+INSERT INTO Historico_Patrimonio (id_usuario, id_ativo, data, alteracao, quantidade, novo_saldo, preco_medio) VALUES
+(1, 1, '2023-01-10', 'Compra inicial', 100, 100, 9.80),
+(1, 1, '2023-02-15', 'Compra', 50, 150, 9.75),
+(1, 2, '2023-03-01', 'Compra inicial', 200, 200, 30.50);
+
+-- Inserindo dados na tabela Negociacoes
+INSERT INTO Negociacoes (id_usuario, id_ativo, data, corretora, tipo, qtd, preco, total, preco_com_taxas, total_com_taxas) VALUES
+(1, 1, '2023-01-10', 'XP Investimentos', 'C', 100, 9.80, 980.00, 9.82, 982.00),
+(1, 1, '2023-02-15', 'XP Investimentos', 'C', 50, 9.70, 485.00, 9.75, 487.50),
+(1, 2, '2023-03-01', 'NuInvest', 'C', 200, 30.50, 6100.00, 30.55, 6110.00);
+
+-- Inserindo dados na tabela Proventos
+INSERT INTO Proventos (id_usuario, id_ativo, data_pagamento, data_com, tipo, valor_por_cota, total_recebido) VALUES
+(1, 1, '2023-03-17', '2023-03-15', 'RENDIMENTO', 0.80, 120.00),
+(1, 2, '2023-04-10', '2023-04-05', 'JCP', 0.55, 110.00);
+
+-- Inserindo dados na tabela Indicadores_Ativos
+INSERT INTO Indicadores_Ativos (id_usuario, id_ativo, data, valor_mercado, patrimonio, p_vp, retorno_12m_percentual, variacao_12m) VALUES
+(1, 1, '2023-06-01', 5000000000, 5200000000, 0.96, 12.50, 10.00),
+(1, 2, '2023-06-01', 400000000000, 380000000000, 1.05, 15.00, 13.50);
+
+-- Inserindo dados na tabela Roles
+INSERT INTO Roles (nome_role) VALUES
+('admin'),
+('user');
+
+-- Inserindo dados na tabela Permissoes
+INSERT INTO Permissoes (nome_permissao) VALUES
+('read_all'),
+('write_ativo'),
+('delete_ativo');
+
+-- Inserindo dados na tabela Usuario_Roles
+INSERT INTO Usuario_Roles (id_usuario, id_role) VALUES
+(1, 1), -- Ana é admin
+(2, 2); -- Bruno é user
+
+-- Inserindo dados na tabela Role_Permissoes
+INSERT INTO Role_Permissoes (id_role, id_permissao) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(2, 1),
+(2, 2);
+
+-- Inserindo dados na tabela Transacoes_Viagem
+INSERT INTO Transacoes_Viagem (id_usuario, data, valor_original, moeda_original, valor_convertido, moeda_convertida, taxa_conversao, tipo_transacao, descricao) VALUES
+(1, '2023-05-20', 100.00, 'USD', 480.00, 'BRL', 4.80, 'Wise', 'Compra de passagem aérea'),
+(1, '2023-05-22', 50.00, 'USD', 242.50, 'BRL', 4.85, 'Cartão de Crédito', 'Jantar em restaurante');
+
+-- Inserindo dados na tabela Juros_Wise
+INSERT INTO Juros_Wise (id_usuario, data, moeda, valor_juros, saldo_base) VALUES
+(1, '2023-06-01', 'USD', 1.50, 300.00),
+(1, '2023-07-01', 'USD', 1.85, 350.00);
+
+-- Inserindo dados na tabela Cartoes_Credito
+INSERT INTO Cartoes_Credito (id_usuario, nome_cartao, banco, tipo_cartao, bandeira, ultimos_quatro_digitos, limite, cor) VALUES
+(1, 'Meu Cartão Nubank', 'Nubank', 'Crédito', 'Mastercard', '1234', 5000.00, '#8205BA'),
+(2, 'Cartão Inter', 'Inter', 'Crédito', 'Visa', '5678', 8000.00, '#FF8A00');

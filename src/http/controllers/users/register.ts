@@ -1,11 +1,10 @@
 import { z } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
-
 import { RegisterUserUseCase } from "@/use-cases/user/register_user_case";
+import { InMemoryUsersRepository } from "@/repositories/in-memory/in-memory-users-repository";
+import { UserAlreadyExistsError } from "@/use-cases/errors/user-already-exists-error";
 
-
-
-const registerUserUseCase = new RegisterUserUseCase();
+// const registerUserUseCase = new RegisterUserUseCase();
 
 export async function registerController(
   request: FastifyRequest,
@@ -21,17 +20,20 @@ export async function registerController(
   const { nome, email, senha } = registerBodySchema.parse(request.body);
 
   try {
-    const user = await registerUserUseCase.execute({ nome, email, senha });
+    const usersRepository = new InMemoryUsersRepository()
+     const registerUseCase = new RegisterUserUseCase(usersRepository);
 
-    return reply.status(201).send({
-      message: "Usuário criado com sucesso",
-      user: { codigo: user.codigo, nome: user.nome, email: user.email },
-    });
-  } catch (err: any) {
-    if (err.message === "Usuário já existe") {
+    
+     await registerUseCase.execute({
+      nome,
+      email,
+      senha,
+    })
+  } catch (err) {
+   if (err instanceof UserAlreadyExistsError) {
       return reply.status(409).send({ message: err.message });
     }
-    console.error(err);
-    return reply.status(500).send({ message: "Erro interno do servidor" });
+     throw err
   }
+  return reply.status(201).send()
 }
